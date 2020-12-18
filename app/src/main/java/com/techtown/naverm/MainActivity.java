@@ -55,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         mapFragment.getMapAsync(this);
 
+
         locationSource = new FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE);
     }
 
@@ -75,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(@NonNull NaverMap naverMap) {
+
         this.naverMap = naverMap;
         naverMap.setLocationSource(locationSource);
         naverMap.setLocationTrackingMode(LocationTrackingMode.Follow);
@@ -86,26 +88,30 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         naverMap.setOnMapClickListener(this);
 
         LatLng mapCenter = naverMap.getCameraPosition().target;
-
+        workPlace(mapCenter.latitude,mapCenter.longitude);
 
     }
 
     private void workPlace(double LAT, double LNG){
-        Retrofit retrofit = new Retrofit.Builder().baseUrl("http://openapi.seoul.go.kr")
+
+        Retrofit retrofit = new Retrofit.Builder().baseUrl("http://openapi.seoul.go.kr:8088")
                 .addConverterFactory(GsonConverterFactory.create()).build();
         Api api = retrofit.create(Api.class);
-        api.getPlacesByGeo(LAT, LNG).enqueue(new Callback<Places>() {
+        api.getPlacesByGeo(LAT,LNG).enqueue(new Callback<ApiResult>() {
             @Override
-            public void onResponse(Call<Places> call, Response<Places> response) {
+            public void onResponse(Call<ApiResult> call, Response<ApiResult> response) {
+
+
                 if (response.code()==200){
-                    Places nplaces = response.body();
-                    updateMapMarkers(nplaces);
+                    ApiResult apiResult = response.body();
+
+                    updateMapMarkers(apiResult.getListConstructionWorkService());
                 }
             }
 
             @Override
-            public void onFailure(Call<Places> call, Throwable t) {
-                Log.d(TAG, "fail");
+            public void onFailure(Call<ApiResult> call, Throwable t) {
+                Log.d(TAG, t.getMessage());
 
             }
         });
@@ -113,8 +119,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void updateMapMarkers(Places nplaces){
         resetMarkerList();
-        if (nplaces.places != null && nplaces.places.size()>0){
-            for (Place place : nplaces.places){
+        if (nplaces.getRow() != null && nplaces.getRow().size()>0){
+            for (Place place : nplaces.getRow()){
+                Log.d("jyh",place.SITE_ADDR);
                 Marker marker = new Marker();
                 marker.setTag(place);
                 marker.setPosition(new LatLng(place.LAT, place.LNG));
