@@ -8,6 +8,6 @@ import retrofit2.http.Query;
 public interface Api {
 
     @Headers("Accept: application/json")
-    @GET("/706265636c6b7373363342726c7768/json/ListConstructionWorkService/1/5")
+    @GET("http://openapi.seoul.go.kr:8088/706265636c6b7373363342726c7768/json/ListConstructionWorkService/1/500/")
     Call<ApiResult> getPlacesByGeo(@Query("LAT") double LAT, @Query("LNG") double LNG);
 }
